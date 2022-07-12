@@ -1,2 +1,4 @@
 # musescore_style_script
-Apply styles to a musescore file from a script
+
+Apply styles to a [Musescore](https://musescore.org/en) file from a powershell script
+
