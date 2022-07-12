@@ -1,6 +1,7 @@
 # Powershell script
 # Applies a style file to a musecore mscz file then converts it to a pdf.
 # SETUP: double check and amend your path to the musescore executable in the commands below
+# See https://musescore.org/en/handbook/3/command-line-options for help with musescore cli usage
 #
 # The original mscz file is modified with the new style as well as the output pdf
 # Style files: https://musescore.org/en/handbook/3/layout-and-formatting#save-and-load-style
