@@ -29,6 +29,8 @@ param(
 # Save style definition to a temp file.
 # To see available style settings, from musescore, save a style as a .mss file and inspect the contents
 $styleFile = New-TemporaryFile
+
+# FIXME set right margins
 Set-Content -Path $styleFile.FullName -Value @"
 <?xml version="1.0" encoding="UTF-8"?>
 <museScore version="3.02">
@@ -37,6 +39,8 @@ Set-Content -Path $styleFile.FullName -Value @"
     <pageHeight>${pageHeight}</pageHeight>
     <pageEvenLeftMargin>0.393701</pageEvenLeftMargin>
     <pageOddLeftMargin>0.390157</pageOddLeftMargin>
+    <pageOddRightMargin>0.390157</pageOddRightMargin>
+    <pageEvenRightMargin>0.390157</pageEvenRightMargin>
     <pageEvenTopMargin>0.390157</pageEvenTopMargin>
     <pageEvenBottomMargin>0.790157</pageEvenBottomMargin>
     <pageOddTopMargin>0.390157</pageOddTopMargin>
@@ -54,9 +58,9 @@ Write-Host "Updating score style..."
 
 # Convert the score to pdf
 Write-Host "Converting to pdf..."
-& $path -o $outputPdf $msczFile
+& $path -o $outputPdf $msczFile | Out-Null
 
 # Clean up temp files
-Remove-Item -Path $styleFile.FullName
+Remove-Item -Path $styleFile.FullName 
 Write-Host "Done"
 
