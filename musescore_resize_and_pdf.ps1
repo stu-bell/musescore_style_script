@@ -18,6 +18,8 @@ param(
         [string]$pageWidth=8.5,
         [Parameter(HelpMessage="Set the score's page height")]
         [string]$pageHeight=11,
+    
+
         [Parameter(HelpMessage="Set the score's page scaling space")]
         [string]$Spatium=2.23
     )
@@ -31,6 +33,12 @@ Set-Content -Path $styleFile.FullName -Value @"
 <Style>
     <pageWidth>${pageWidth}</pageWidth>
     <pageHeight>${pageHeight}</pageHeight>
+    <pageEvenLeftMargin>0.393701</pageEvenLeftMargin>
+    <pageOddLeftMargin>0.390157</pageOddLeftMargin>
+    <pageEvenTopMargin>0.390157</pageEvenTopMargin>
+    <pageEvenBottomMargin>0.790157</pageEvenBottomMargin>
+    <pageOddTopMargin>0.390157</pageOddTopMargin>
+    <pageOddBottomMargin>0.790157</pageOddBottomMargin>
     <Spatium>${Spatium}</Spatium>
 </Style>
 </museScore>
@@ -38,9 +46,13 @@ Set-Content -Path $styleFile.FullName -Value @"
 
 # SETUP: double check and amend your path to the musescore executable in the commands below
 # Apply the style to the score
-&"C:\Program Files\MuseScore 3\bin\Musescore3.exe" -S $styleFile.FullName -o $msczFile $msczFile
+Write-Host "Updating score style..."
+& "C:\Program Files\MuseScore 3\bin\Musescore3.exe" -S $styleFile.FullName -o $msczFile $msczFile
+# FIXME: we have to wait for the mscz to finish updating before calling the pdf command next
+Start-Sleep -Seconds 10
+Write-Host "converting to pdf..."
 # Convert the score to pdf
-&"C:\Program Files\MuseScore 3\bin\Musescore3.exe" -o $outputPdf $msczFile
+& "C:\Program Files\MuseScore 3\bin\Musescore3.exe" -o $outputPdf $msczFile
 
 # Clean up style file
 Remove-Item -Path $styleFile.FullName
