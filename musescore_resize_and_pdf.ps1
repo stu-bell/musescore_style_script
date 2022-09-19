@@ -1,52 +1,60 @@
 # Powershell script
-# Applies a style file to a musecore mscz file then converts it to a pdf.
-# SETUP: double check and amend your path to the musescore executable in the commands below
+# Applies style settings to a musecore mscz file and optionally converts format (eg to a PDF).
+# SETUP: double check and amend your path to the musescore executable in the musescorePath parameter
+# The original mscz file is modified with the new style as well as the output file
+# The style template in this script modifies just the styles I'm iterested in. 
+# Modify the xml template and powershell parameters to add your own styles
+# Style files (*.mss): https://musescore.org/en/handbook/3/layout-and-formatting#save-and-load-style
 # See https://musescore.org/en/handbook/3/command-line-options for help with musescore cli usage
-# The original mscz file is modified with the new style as well as the output pdf
-# Style files: https://musescore.org/en/handbook/3/layout-and-formatting#save-and-load-style
-# Scaling: https://musescore.org/en/handbook/3/page-settings#scaling
 
 param(
-        [Parameter(Mandatory, HelpMessage="Path to musescore file")]
+        [Parameter(Mandatory, HelpMessage="Musescore input file path")]
         [string]$msczFile,
 
         [Parameter(HelpMessage="Output file path")]
-        [string]$outputPdf="$((Get-Item $msczFile).Basename).pdf",
+        [string]$outputFile="$((Get-Item $msczFile).Basename).pdf",
 
-        [Parameter(HelpMessage="Set the score's page width")]
-        [string]$pageWidth=8.5,
-        [Parameter(HelpMessage="Set the score's page height")]
-        [string]$pageHeight=11,
-    
+        [Parameter(HelpMessage="Musescore Executable path")]
+        [string]$musescorePath="C:\Program Files\MuseScore 3\bin\Musescore3.exe",
 
-        [Parameter(HelpMessage="Set the score's page scaling space")]
-        [string]$Spatium=2.23
-    )
-# SETUP: double check and amend your path to the musescore executable in the commands below
-    $path="C:\Program Files\MuseScore 3\bin\Musescore3.exe" 
+        # Page size parameters
+        # Scaling: https://musescore.org/en/handbook/3/page-settings#scaling
+        [Parameter(HelpMessage="Page scaling space")]
+        [string]$Spatium=2.23,
+        [Parameter(HelpMessage="Page width")]
+        [string]$PageWidth=8.5,
+        [Parameter(HelpMessage="Page height")]
+        [string]$PageHeight=11,
 
+        # Page margin params
+        [Parameter(HelpMessage="Page Top and Bottom margins")]
+        [string]$TopBottomMargin=0.35,
+        # "Right Margin" = page width - left margin - printable width
+        [Parameter(HelpMessage="Page Left and Right margins")]
+        [string]$LeftRightMargin=0.35,
+        [Parameter(HelpMessage="Page PrintableWidth")]
+        [string]$PrintableWidth=($PageWidth - 2*$LeftRightMargin)
+)
 
 # Save style definition to a temp file.
-# To see available style settings, from musescore, save a style as a .mss file and inspect the contents
 $styleFile = New-TemporaryFile
-
-# FIXME set right margins
+# Modify the mss style xml template below to add your own styles
+# To see available style settings, from musescore, save a style as a .mss file and inspect the contents
 Set-Content -Path $styleFile.FullName -Value @"
 <?xml version="1.0" encoding="UTF-8"?>
 <museScore version="3.02">
 <Style>
-    <pageWidth>${pageWidth}</pageWidth>
-    <pageHeight>${pageHeight}</pageHeight>
-    <pageEvenLeftMargin>0.393701</pageEvenLeftMargin>
-    <pageOddLeftMargin>0.390157</pageOddLeftMargin>
-    <pageOddRightMargin>0.390157</pageOddRightMargin>
-    <pageEvenRightMargin>0.390157</pageEvenRightMargin>
-    <pageEvenTopMargin>0.390157</pageEvenTopMargin>
-    <pageEvenBottomMargin>0.790157</pageEvenBottomMargin>
-    <pageOddTopMargin>0.390157</pageOddTopMargin>
-    <pageOddBottomMargin>0.790157</pageOddBottomMargin>
-    
     <Spatium>${Spatium}</Spatium>
+    <pageWidth>${PageWidth}</pageWidth>
+    <pageHeight>${PageHeight}</pageHeight>
+    <!-- 'Right margin' is determined by page width, printable width and left margins -->
+    <pagePrintableWidth>${PrintableWidth}</pagePrintableWidth>
+    <pageEvenLeftMargin>${LeftRightMargin}</pageEvenLeftMargin>
+    <pageOddLeftMargin>${LeftRightMargin}</pageOddLeftMargin>
+    <pageEvenTopMargin>${TopBottomMargin}</pageEvenTopMargin>
+    <pageEvenBottomMargin>${TopBottomMargin}</pageEvenBottomMargin>
+    <pageOddTopMargin>${TopBottomMargin}</pageOddTopMargin>
+    <pageOddBottomMargin>${TopBottomMargin}</pageOddBottomMargin>
 </Style>
 </museScore>
 "@
@@ -54,13 +62,12 @@ Set-Content -Path $styleFile.FullName -Value @"
 # Apply the style to the score
 # Pipe to out-null because we want to wait for Musescore to finish update the mscz file before converting it to pdf
 Write-Host "Updating score style..."
-& $path -S $styleFile.FullName -o $msczFile $msczFile | Out-Null
+& $musescorePath -S $styleFile.FullName -o $msczFile $msczFile | Out-Null
 
-# Convert the score to pdf
-Write-Host "Converting to pdf..."
-& $path -o $outputPdf $msczFile | Out-Null
+# Convert the score to output format
+Write-Host "Converting to output format..."
+& $musescorePath -o $outputFile $msczFile | Out-Null
 
 # Clean up temp files
 Remove-Item -Path $styleFile.FullName 
 Write-Host "Done"
-
