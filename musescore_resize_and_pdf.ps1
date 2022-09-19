@@ -9,13 +9,13 @@
 
 param(
         [Parameter(Mandatory, HelpMessage="Musescore input file path")]
-        [string]$msczFile,
+        [string]$MsczFile,
 
         [Parameter(HelpMessage="Output file path")]
-        [string]$outputFile="$((Get-Item $msczFile).Basename).pdf",
+        [string]$OutputFile="$((Get-Item $msczFile).Basename).pdf",
 
         [Parameter(HelpMessage="Musescore Executable path")]
-        [string]$musescorePath="C:\Program Files\MuseScore 3\bin\Musescore3.exe",
+        [string]$MusescorePath="C:\Program Files\MuseScore 3\bin\Musescore3.exe",
 
         # Page size parameters
         # Scaling: https://musescore.org/en/handbook/3/page-settings#scaling
@@ -62,11 +62,11 @@ Set-Content -Path $styleFile.FullName -Value @"
 # Apply the style to the score
 # Pipe to out-null because we want to wait for Musescore to finish update the mscz file before converting it to pdf
 Write-Host "Updating score style..."
-& $musescorePath -S $styleFile.FullName -o $msczFile $msczFile | Out-Null
+& $MusescorePath -S $styleFile.FullName -o $MsczFile $MsczFile | Out-Null
 
 # Convert the score to output format
 Write-Host "Converting to output format..."
-& $musescorePath -o $outputFile $msczFile | Out-Null
+& $MusescorePath -o $OutputFile $MsczFile | Out-Null
 
 # Clean up temp files
 Remove-Item -Path $styleFile.FullName 
